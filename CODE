@@ -1,0 +1,108 @@
+function Finite_Hankel_Project_Modified
+n = 1;
+sstep = 1;
+zeta_k = J0ROOTS(n,sstep);
+nu=1.2; beta=0.1; a = 1.0; theta=0.90;
+abc=1-theta+theta./gamma(theta);
+mu=theta./abc;
+lambda=(1-theta)./abc;
+alpha=0.5;
+r = (-1:0.1:1).';
+t=2.0;
+u1 = zeros(numel(r),numel(t));
+v1 = zeros(numel(r),numel(t));
+u2 = zeros(numel(r),numel(t));
+v2 = zeros(numel(r),numel(t));
+u3 = zeros(numel(r),numel(t));
+v3 = zeros(numel(r),numel(t));
+for i = 1:numel(t)
+  for k = 1:numel(r)
+    for l = 1:n
+      %Integer-order case  
+      u1(k,i) = u1(k,i) +(2/(a.^2)).*besselj(0,r(k).*zeta_k(l))./(besselj(1,a.*zeta_k(l)).*besselj(1,a.*zeta_k(l)))...
+                        .*exp((1-alpha-zeta_k(l).^2).*2).*(integral(@(eta) eta.*exp(-eta).*besselj(0,zeta_k(l).*eta),0,a));                      
+      
+      v1(k,i) = v1(k,i) + (2.*nu./a).*zeta_k(l)*besselj(0,r(k).*zeta_k(l))./(besselj(1,a.*zeta_k(l))).*(integral(@(eta) ...
+                        exp(-eta).*exp((beta-nu.*zeta_k(l).^2).*(2-eta)),0,t))...
+                        +(2.*alpha./(a.^2)).*besselj(0,r(k).*zeta_k(l))./(besselj(1,a.*zeta_k(l)).*besselj(1,a.*zeta_k(l)))...
+                        .*(integral(@(eta) exp((1-alpha-zeta_k(l).^2).*(2-eta)).*exp((beta-nu.*zeta_k(l).^2).*eta),0,t))...
+                        .*(integral(@(eta) eta.*exp(-eta).*besselj(0,zeta_k(l).*eta),0,a)); 
+      
+      %Caputo Fractional-order case
+       
+      u2(k,i) = u2(k,i) +(2/(a.^2)).*besselj(0,r(k).*zeta_k(l))./(besselj(1,a.*zeta_k(l)).*besselj(1,a.*zeta_k(l)))...
+                        .*gml_fun(theta,1,1,((1-alpha-zeta_k(l).^2).*2.^theta)).*(integral(@(eta) eta.*exp(-eta).*besselj(0,zeta_k(l).*eta),0,a)); 
+                    
+     
+      v2(k,i) = v2(k,i) + (2.*nu./a).*zeta_k(l).*besselj(0,r(k).*zeta_k(l))./(besselj(1,a.*zeta_k(l))).*(integral(@(eta) ...
+                        eta.^(theta-1).*gml_fun(theta,theta,1,((beta-nu.*zeta_k(l).^2).*(2-eta).^theta)).*exp(-eta),0,t))...
+                        +(2.*alpha./(a.^2)).*besselj(0,r(k).*zeta_k(l))./(besselj(1,a.*zeta_k(l)).*besselj(1,a.*zeta_k(l)))...
+                        .*(integral(@(eta) eta.^(theta-1).*gml_fun(theta,theta,1,((beta-nu.*zeta_k(l).^2).*eta.^theta)),0,t))...
+                        .*(integral(@(eta) gml_fun(theta,1,1,((1-alpha-zeta_k(l).^2).*(2-eta).^theta))...
+                        .*eta.*exp(-eta).*besselj(0,eta.*zeta_k(l)),0,a));               
+    
+    %ABC Fractional derivative
+   
+    u3(k,i) = u3(k,i) + (2/(a.^2)).*besselj(0,r(k).*zeta_k(l))./((1-lambda + alpha.*lambda+lambda.*zeta_k(l).^2).*besselj(1,a.*zeta_k(l))...
+                      .*besselj(1,a.*zeta_k(l))).*gml_fun(theta,1,1,((1-alpha-zeta_k(l).^2).*2.^theta)./(1-lambda + alpha.*lambda+lambda.*zeta_k(l).^2))...
+                      .*(integral(@(eta) eta.*exp(-eta).*besselj(0,zeta_k(l).*eta),0,a)); 
+    
+                   
+    v3(k,i) = v3(k,i) + (2.*nu.*mu./a).*zeta_k(l).*besselj(0,r(k).*zeta_k(l))./((1-beta.*lambda + nu.*lambda.*zeta_k(l).^2).*besselj(1,a.*zeta_k(l)))...
+                      .*(integral(@(eta) gml_fun(theta,theta,1,(((beta.*mu-nu.*mu.*zeta_k(l).^2).*(2-eta).^theta)./(1-beta.*lambda ...
+                      + nu.*lambda.*zeta_k(l).^2))).*exp(-eta),0,t))...
+                      +(2.*nu.*lambda./a).*zeta_k(l).*besselj(0,r(k).*zeta_k(l))./((1-beta.*lambda + nu.*lambda.*zeta_k(l).^2) ...
+                      .*besselj(1,a.*zeta_k(l))).*(exp(-t) - (nu.*zeta_k(l).^2.*mu - beta.*mu)/(1-beta.*lambda + nu.*lambda.*zeta_k(l).^2)).*(integral(@(eta) (eta.^(theta-1).*gml_fun(theta,theta,1,(((beta.*mu ...
+                      - nu.*mu.*zeta_k(l).^2).*(2-eta).^theta)./(1-beta.*lambda + nu.*lambda.*zeta_k(l).^2))).*exp(-eta)),0,t)) ...
+                       +(2.*mu.*alpha./(a.^2))...
+                      .*besselj(0,r(k).*zeta_k(l))./((1-lambda+alpha.*lambda + lambda.*zeta_k(l).^2).*(1-beta.*lambda + nu.*lambda.*zeta_k(l).^2)...
+                      .*besselj(1,a.*zeta_k(l)).*besselj(1,a.*zeta_k(l)))...
+                      .*(integral(@(eta) eta.^(theta-1).*gml_fun(theta,theta,1,(((beta.*mu-nu.*mu.*zeta_k(l).^2).*eta.^theta)./((1-beta.*lambda + nu.*lambda.*zeta_k(l).^2))))...
+                      .*gml_fun(theta,1,1,(((1-alpha-zeta_k(l).^2).*mu.*(2-eta).^theta)./((1-beta.*lambda + nu.*lambda.*zeta_k(l).^2)))),0,t))...
+                      .*(integral(@(eta) eta.*exp(-eta).*besselj(0,eta.*zeta_k(l)),0,a)) ...
+                      +(2.*lambda.*alpha./(a.^2)).*zeta_k(l).*besselj(0,r(k).*zeta_k(l))./((1-beta.*lambda + nu.*lambda.*zeta_k(l).^2).*besselj(1,a.*zeta_k(l)).*besselj(1,a.*zeta_k(l)))...
+                      .*((1./(1-lambda+alpha.*lambda + lambda.*zeta_k(l).^2)).*gml_fun(theta,1,1,(((1-alpha-zeta_k(l).^2)...
+                      .*mu.*t.^theta)./((1-beta.*lambda + nu.*lambda.*zeta_k(l).^2)))).*(integral(@(eta) eta.*exp(-eta).*besselj(0,eta.*zeta_k(l)),0,a)) - (nu.*zeta_k(l).^2.*mu - beta.*mu)/(1-beta.*lambda + nu.*lambda.*zeta_k(l).^2).*(integral(@(eta) eta.^(theta-1).*gml_fun(theta,theta,1,(((beta.*mu...
+                      -nu.*mu.*zeta_k(l).^2).*eta.^theta)./((1-beta.*lambda + nu.*lambda.*zeta_k(l).^2)))).*gml_fun(theta,1,1,(((1-alpha-zeta_k(l).^2)...
+                      .*mu.*(2-eta).^theta)./((1-beta.*lambda + nu.*lambda.*zeta_k(l).^2)))),0,t)).*(integral(@(eta) eta.*exp(-eta).*besselj(0,eta...
+                      .*zeta_k(l)),0,a)));                                     
+    end
+   end
+end
+plot(r,v1,'k','linewidth',3)
+hold on
+plot(r,v3,'g','linewidth',3)
+%hold on
+%plot(r,v3,'b','linewidth',3)
+%xlabel('r'),ylabel('u(r,t)')
+xlabel('r'),ylabel('v(r,t)')
+
+function x=J0ROOTS(n,sstep)
+if nargin==0 
+    n=20;
+    sstep=1;
+elseif nargin==1
+    sstep=1;
+end
+J0=@(x) besselj(0,x);
+k=0; i=0;
+while k<n 
+    i1=i+sstep;
+    if J0(i)*J0(i1)<0 
+        k=k+1;
+        x(k)=fzero(J0,[i i1]);
+    end
+    i=i1;
+end
+end
+function f=gml_fun(a,b,c,x,eps0)
+ gamma_c=1.0./gamma(c);
+ if nargin<5, eps0=eps; 
+ end
+ f=0; fa=1; j=0;
+ while norm(fa,1)>=eps0
+    fa=(gamma(c+j).*gamma_c)./gamma(j+1)./gamma(a.*j+b).*x.^j;
+    f=f+fa; j=j+1; 
+ end
+end
+end
